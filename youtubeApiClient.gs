@@ -87,28 +87,42 @@ function processApiResponse_(response, columns, videoIds) {
  * @throws {Error} If input parameters are invalid
  */
 function updateStatusColumns_(range, statusUpdates, statusColIndex) {
-  if (!range || typeof range.getValues !== 'function') throw new Error("Invalid range");
-  if (!Array.isArray(statusUpdates)) throw new Error("Invalid status updates");
-  if (typeof statusColIndex !== 'number' || statusColIndex < 0 || Math.floor(statusColIndex) !== statusColIndex) {
-    throw new Error("Invalid status column index");
+  if (!range || typeof range.getValues !== 'function') {
+    throw new Error('Invalid range');
   }
-  
-  const values = range.getValues();
+  if (!Array.isArray(statusUpdates)) {
+    throw new Error('Invalid status updates');
+  }
+  if (
+    typeof statusColIndex !== 'number' ||
+    statusColIndex < 0 ||
+    Math.floor(statusColIndex) !== statusColIndex
+  ) {
+    throw new Error('Invalid status column index');
+  }
+
+  // Gracefully handle empty ranges or no updates
+  var numRows = typeof range.getNumRows === 'function' ? range.getNumRows() : 0;
+  if (numRows === 0 || statusUpdates.length === 0) {
+    return; // nothing to update
+  }
+
+  var values = range.getValues();
   if (statusUpdates.length !== values.length) {
     throw new Error("Range row count doesn't match status updates count");
   }
-  
-  const validValues = [];
-  statusUpdates.forEach((status, i) => {
+
+  var validValues = [];
+  statusUpdates.forEach(function(status, i) {
     if (i >= values.length) return;
     if (statusColIndex >= values[i].length) {
-      throw new Error("Status column index exceeds available columns");
+      throw new Error('Status column index exceeds available columns');
     }
-    
-    const row = values[i].slice();
+
+    var row = values[i].slice();
     row[statusColIndex] = status;
     validValues.push(row);
   });
-  
+
   range.setValues(validValues);
 }
