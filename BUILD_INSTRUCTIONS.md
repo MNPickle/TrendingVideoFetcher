@@ -126,7 +126,7 @@ Open **View → Show manifest file** and ensure:
    <html>
      <head>
        <base target="_top">
-       <?!= HtmlService.createHtmlOutputFromFile('uiComponentsStyles').getContent(); ?>
+       <?!= HtmlService.createHtmlOutputFromFile('uiStyles').getContent(); ?>
      </head>
      <body>
        <form id="configForm">
@@ -151,7 +151,7 @@ Open **View → Show manifest file** and ensure:
   ```html
   <!-- statsDashboardUi.html -->
   <!DOCTYPE html>
-  <html><head><base target="_top"><?!= HtmlService.createHtmlOutputFromFile('uiComponentsStyles').getContent(); ?></head>
+  <html><head><base target="_top"><?!= HtmlService.createHtmlOutputFromFile('uiStyles').getContent(); ?></head>
   <body>
     <h3>Channel Statistics</h3>
     <div id="stats"></div>
@@ -169,7 +169,7 @@ Open **View → Show manifest file** and ensure:
   ```html
   <!-- sidebarUi.html -->
   <!DOCTYPE html>
-  <html><head><base target="_top"><?!= HtmlService.createHtmlOutputFromFile('uiComponentsStyles').getContent(); ?></head>
+  <html><head><base target="_top"><?!= HtmlService.createHtmlOutputFromFile('uiStyles').getContent(); ?></head>
   <body>
     <button onclick="google.script.run.showStatsDashboard()">View Stats Dashboard</button>
     <div id="spinner"></div>
@@ -194,7 +194,7 @@ Open **View → Show manifest file** and ensure:
   ```html
   <!-- logsViewerUi.html -->
   <!DOCTYPE html>
-  <html><head><base target="_top"><?!= HtmlService.createHtmlOutputFromFile('uiComponentsStyles').getContent(); ?></head>
+  <html><head><base target="_top"><?!= HtmlService.createHtmlOutputFromFile('uiStyles').getContent(); ?></head>
   <body>
     <pre id="logContent">Loading…</pre>
     <script>
@@ -211,8 +211,8 @@ Open **View → Show manifest file** and ensure:
   <div class="spinner"></div>
   ```
 
-### 2.7 Execution Order 6: uiComponentsStyles.html
-1. **+ → HTML**, name it `uiComponentsStyles`.
+### 2.7 Execution Order 6: uiStyles.html
+1. **+ → HTML**, name it `uiStyles`.
 2. Paste:
    ```html
    <style>

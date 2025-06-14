@@ -95,7 +95,7 @@ Flow:
    - `logsViewerUi.html`  
    - `sidebarUi.html`  
    - `spinnerUi.html`  
-   - `uiComponentsStyles.html`  
+  - `uiStyles.html`
 4. Enable the **YouTube Data API v3** in the Google Cloud project linked to your script.  
 5. Save all files and refresh the Google Sheet.  
 
@@ -174,7 +174,7 @@ Clears the timestamp in `CONFIG → LAST_FETCH_UTC`, forcing a full fetch on nex
   Persistent navigation sidebar for quick access to fetch, stats, logs.  
 - **spinnerUi.html**  
   Loading spinner component for async operations.  
-- **uiComponentsStyles.html**  
+- **uiStyles.html**
   Centralized CSS for all UI dialogs and sidebars.  
 
 ---
@@ -205,7 +205,7 @@ Menu items installed via `onOpen()` in `mainSetup.gs`.
 - Use ES5 syntax only (Apps Script restriction).  
 - Always fetch API key & settings from `CONFIG` sheet—no hard-coding.  
 - Avoid duplicates via `video_id` index on the `VIDEOS` sheet.  
-- UI styling centralized in `uiComponentsStyles.html`.  
+- UI styling centralized in `uiStyles.html`.
 - Sidebar & spinner are implemented via their own HTML files.
 
 ---
