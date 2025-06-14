@@ -33,8 +33,11 @@ function refreshData() {
 }
 
 function showConfigDialog() {
-  var html = HtmlService.createHtmlOutputFromFile('configDialogUi').setWidth(400).setHeight(300);
-  SpreadsheetApp.getUi().showModalDialog(html,'Configure Settings');
+  var settings = config('settings') || {};
+  var template = HtmlService.createTemplateFromFile('configDialogUi');
+  template.settings = settings;
+  var html = template.evaluate().setWidth(400).setHeight(300);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Configure Settings');
 }
 
 function saveConfiguration(cfg) {
