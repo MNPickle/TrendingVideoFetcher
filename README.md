@@ -1,5 +1,4 @@
-# ScriptBuilderProject
-
+# Trending Video Fetcher
 A Google Sheets automation tool that fetches trending YouTube videos via the YouTube Data API v3, stores them in a dedicated sheet, and provides management features through a custom menu and UI dashboards.
 
 ---
