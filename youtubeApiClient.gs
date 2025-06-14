@@ -12,10 +12,15 @@ function buildApiRequestUrl_(config) {
   if (config.maxResults) url += `&maxResults=${encodeURIComponent(config.maxResults)}`;
   
   try {
-    new URL(url); // Validate constructed URL
+    if (typeof URL === 'function') {
+      // Validate URL only if the global URL class is available
+      new URL(url);
+    } else if (!/^https?:\/\//i.test(url)) {
+      throw new Error('Invalid URL format');
+    }
     return url;
   } catch (e) {
-    throw new Error(`Invalid URL constructed: ${e.message}`);
+    throw new Error('Invalid URL constructed: ' + (e && e.message));
   }
 }
 
