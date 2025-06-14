@@ -119,4 +119,3 @@ function clearLogs() {
   }
   return true;
 }
-
