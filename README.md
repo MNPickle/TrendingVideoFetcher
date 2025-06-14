@@ -106,8 +106,9 @@ Flow:
 2. In the modal, enter:
    - `YT_API_KEY` (YouTube Data API v3 key)  
    - `REGION` (e.g., `US`, `GB`, `IN`; default `US`)  
-   - `CATEGORY_ID` (optional numeric category; leave blank for all)  
-   - `MAX_RESULTS` (1–50; default 25)  
+   - `CATEGORY_ID` (optional numeric category; leave blank for all)
+   - `MAX_RESULTS` (1–50; default 25)
+   - *(Keyword-based search is not supported; the script always pulls the "most popular" list.)*
 3. Click **Save**. The script will:
    - Store values in the `CONFIG` sheet.  
    - Install the daily trigger.  
