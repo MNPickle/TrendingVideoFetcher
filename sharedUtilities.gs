@@ -36,23 +36,27 @@ function fetchWithRetry(url, options = {}, maxRetries = 3, retryDelay = 1000) {
 function config(key, value) {
   if (!key || typeof key !== 'string') throw new Error("Key must be a non-empty string");
 
-  const scriptProperties = PropertiesService.getScriptProperties();
+  const props = PropertiesService.getDocumentProperties();
   
   if (arguments.length === 1) {
     try {
-      const storedValue = scriptProperties.getProperty(key);
+      const storedValue = props.getProperty(key);
       return storedValue ? JSON.parse(storedValue) : null;
     } catch (e) {
       console.error(`Failed to parse config value for key ${key}`, e);
       return null;
     }
   } else {
+    const lock = LockService.getDocumentLock();
+    lock.waitLock(30000);
     try {
-      scriptProperties.setProperty(key, JSON.stringify(value));
+      props.setProperty(key, JSON.stringify(value));
       return value;
     } catch (e) {
       console.error(`Failed to set config value for key ${key}`, e);
       throw e;
+    } finally {
+      lock.releaseLock();
     }
   }
 }
