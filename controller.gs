@@ -19,12 +19,10 @@ function fetchTrendingVideos() {
     sheet = ss.insertSheet('VIDEOS');
     sheet.appendRow(['video_id','title','channel','published_at','status','fetched_at']);
   }
-  var existingIds = [];
   var lastRow = sheet.getLastRow();
+  var existingIds = [];
   if (lastRow > 1) {
-    existingIds = sheet.getRange(2, 1, lastRow - 1, 1)
-      .getValues()
-      .map(function(r) { return r[0]; });
+    existingIds = sheet.getRange(2, 1, lastRow - 1, 1).getValues().map(function(r){ return r[0]; });
   }
   var rows = processApiResponse_(data, ['video_id','title','channel','published_at','status','fetched_at'], existingIds);
   if (rows.length) {
