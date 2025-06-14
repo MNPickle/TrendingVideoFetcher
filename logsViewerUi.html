@@ -1,0 +1,223 @@
+<!-- This file includes embedded JS/CSS due to project type rules -->
+<html>
+  <head>
+    <base target="_top">
+    <?!= HtmlService.createHtmlOutputFromFile('uiComponentsStyles.html').getContent(); ?>
+
+    <style>
+      .json-container {
+        display: none;
+        margin-top: 8px;
+        padding: 8px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .expand-btn {
+        cursor: pointer;
+        color: blue;
+        text-decoration: underline;
+      }
+      #filter-input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 16px;
+      }
+      pre {
+        white-space: pre-wrap;
+        margin: 0;
+      }
+      #loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 16px;
+      }
+      #pagination-controls {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Log Viewer</h2>
+    
+    <input type="text" id="filter-input" placeholder="Filter logs..." />
+    <div id="loading-spinner">
+      <span>Loading logs...</span>
+    </div>
+    
+    <table id="logs-table" class="table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Level</th>
+          <th>Message</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="logs-body">
+        <!-- Logs will be populated here -->
+      </tbody>
+    </table>
+    
+    <div id="pagination-controls">
+      <button id="prev-page" class="button" disabled>Previous</button>
+      <span id="page-info">Page 1 of 1</span>
+      <button id="next-page" class="button" disabled>Next</button>
+    </div>
+    
+    <button id="clear-logs" class="button">Clear Logs</button>
+
+    <script>
+      var currentPage = 1;
+      var totalPages = 1;
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        loadLogs();
+        
+        document.getElementById('filter-input').addEventListener('input', function(e) {
+          filterLogs(e.target.value);
+        });
+        
+        document.getElementById('clear-logs').addEventListener('click', clearLogs);
+        document.getElementById('prev-page').addEventListener('click', prevPage);
+        document.getElementById('next-page').addEventListener('click', nextPage);
+      });
+      
+      function loadLogs() {
+        showLoading(true);
+        google.script.run
+          .withSuccessHandler(function(result) {
+            renderLogs(result.logs);
+            updatePagination(result.totalPages);
+            showLoading(false);
+          })
+          .withFailureHandler(function(error) {
+            showError('Failed to load logs: ' + error.message);
+            showLoading(false);
+          })
+          .getLogs(currentPage);
+      }
+      
+      function renderLogs(logs) {
+        if (!logs || !logs.length) {
+          document.getElementById('logs-body').innerHTML = '<tr><td colspan="4">No logs found</td></tr>';
+          return;
+        }
+        
+        var tbody = document.getElementById('logs-body');
+        tbody.innerHTML = '';
+        
+        logs.forEach(function(log) {
+          var row = document.createElement('tr');
+          
+          var timestampCell = document.createElement('td');
+          timestampCell.textContent = log.timestamp;
+          row.appendChild(timestampCell);
+          
+          var levelCell = document.createElement('td');
+          levelCell.textContent = log.level || 'INFO';
+          levelCell.className = 'log-level-' + (log.level || 'info').toLowerCase();
+          row.appendChild(levelCell);
+          
+          var messageCell = document.createElement('td');
+          messageCell.textContent = log.message;
+          row.appendChild(messageCell);
+          
+          var actionCell = document.createElement('td');
+          var expandBtn = document.createElement('span');
+          expandBtn.className = 'expand-btn';
+          expandBtn.textContent = 'View JSON';
+          expandBtn.dataset.id = log.id;
+          
+          var container = document.createElement('div');
+          container.className = 'json-container';
+          var pre = document.createElement('pre');
+          
+          try {
+            pre.textContent = JSON.stringify(log.payload || {}, null, 2);
+          } catch (e) {
+            pre.textContent = 'Unable to display payload: ' + e.message;
+          }
+          
+          container.appendChild(pre);
+          actionCell.appendChild(expandBtn);
+          actionCell.appendChild(container);
+          row.appendChild(actionCell);
+          
+          tbody.appendChild(row);
+        });
+        
+        document.querySelectorAll('.expand-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var container = this.nextElementSibling;
+            container.style.display = container.style.display === 'block' ? 'none' : 'block';
+          });
+        });
+      }
+      
+      function filterLogs(filterText) {
+        var rows = document.querySelectorAll('#logs-body tr');
+        var filter = filterText.toLowerCase().trim();
+        
+        rows.forEach(function(row) {
+          if (!filter) {
+            row.style.display = '';
+            return;
+          }
+          
+          var text = row.textContent.toLowerCase();
+          row.style.display = text.includes(filter) ? '' : 'none';
+        });
+      }
+      
+      function clearLogs() {
+        if (!confirm('Are you sure you want to clear all logs? This cannot be undone.')) {
+          return;
+        }
+        
+        google.script.run
+          .withSuccessHandler(function() {
+            document.getElementById('logs-body').innerHTML = '<tr><td colspan="4">No logs found</td></tr>';
+            currentPage = 1;
+            totalPages = 1;
+            updatePagination(1);
+          })
+          .withFailureHandler(function(error) {
+            showError('Failed to clear logs: ' + error.message);
+          })
+          .clearLogs();
+      }
+      
+      function prevPage() {
+        if (currentPage > 1) {
+          currentPage--;
+          loadLogs();
+        }
+      }
+      
+      function nextPage() {
+        if (currentPage < totalPages) {
+          currentPage++;
+          loadLogs();
+        }
+      }
+      
+      function updatePagination(newTotalPages) {
+        totalPages = newTotalPages || 1;
+        document.getElementById('page-info').textContent = 'Page ' + currentPage + ' of ' + totalPages;
+        document.getElementById('prev-page').disabled = currentPage <= 1;
+        document.getElementById('next-page').disabled = currentPage >= totalPages;
+      }
+      
+      function showLoading(show) {
+        document.getElementById('loading-spinner').style.display = show ? 'block' : 'none';
+      }
+      
+      function showError(message) {
+        alert(message);
+      }
+    </script>
+  </body>
+</html>

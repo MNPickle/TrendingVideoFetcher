@@ -1,0 +1,112 @@
+<html>
+  <head>
+    <style>
+      .sidebar-header {
+        padding: 16px;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 16px;
+      }
+      .sidebar-content {
+        padding: 0 16px;
+      }
+      .action-button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        text-align: left;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+      .action-button:hover {
+        background-color: #f1f3f4;
+      }
+      .divider {
+        height: 1px;
+        background: #e0e0e0;
+        margin: 16px 0;
+      }
+      /* Spinner styles */
+      .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.7);
+        z-index: 1000;
+        display: none;
+      }
+      .loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="sidebar-header">
+      <h1 class="title">YouTube Videos Manager</h1>
+      <p class="subtitle">Manage trending videos in your sheet</p>
+    </header>
+    <main class="sidebar-content">
+      <button id="refresh-btn" class="action-button material-button">
+        <span class="icon">⟳</span> Refresh Videos
+      </button>
+      <button id="config-btn" class="action-button material-button">
+        <span class="icon">⚙️</span> Configuration
+      </button>
+      <div class="divider"></div>
+      <button id="stats-btn" class="action-button material-button">
+        <span class="icon">📊</span> View Statistics
+      </button>
+      <button id="logs-btn" class="action-button material-button">
+        <span class="icon">📝</span> View Logs
+      </button>
+    </main>
+    <div id="spinner-overlay" class="spinner-overlay">
+      <div class="loader"></div>
+    </div>
+    <script>
+      function showSpinner(show) {
+        document.getElementById('spinner-overlay').style.display = show ? 'block' : 'none';
+      }
+      function hideSpinner() {
+        showSpinner(false);
+      }
+      function showErrorModal(message) {
+        alert(message);
+      }
+      document.getElementById('refresh-btn').addEventListener('click', function() {
+        showSpinner(true);
+        google.script.run
+          .withSuccessHandler(hideSpinner)
+          .withFailureHandler(function(error) {
+            hideSpinner();
+            showErrorModal(error.message || 'An unknown error occurred');
+          })
+          .fetchTrendingVideos();
+      });
+      document.getElementById('config-btn').addEventListener('click', function() {
+        google.script.run.showConfigDialog();
+      });
+      document.getElementById('stats-btn').addEventListener('click', function() {
+        google.script.run.showStatsDashboard();
+      });
+      document.getElementById('logs-btn').addEventListener('click', function() {
+        google.script.run.showLogsViewer();
+      });
+    </script>
+  </body>
+</html>

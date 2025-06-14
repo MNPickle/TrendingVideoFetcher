@@ -1,0 +1,200 @@
+<!-- This file includes embedded JS/CSS due to project type rules -->
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('uiComponentsStyles'); ?>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize charts with error handling
+        try {
+          google.charts.load('current', {'packages':['corechart']});
+          google.charts.setOnLoadCallback(function() {
+            fetchDashboardData();
+          });
+        } catch (e) {
+          console.error('Failed to load Google Charts:', e);
+          showErrorMessage('Failed to load charting library. Please try refreshing.');
+        }
+
+        // Load initial data
+        fetchDashboardData();
+
+        function fetchDashboardData() {
+          document.getElementById('recentActivity').innerHTML = 
+            '<div class="vm-spinner">Loading activity data...</div>';
+          
+          document.getElementById('viewsChart').innerHTML = 
+            '<div class="vm-spinner">Loading views data...</div>';
+          document.getElementById('engagementChart').innerHTML = 
+            '<div class="vm-spinner">Loading engagement data...</div>';
+          document.getElementById('growthChart').innerHTML = 
+            '<div class="vm-spinner">Loading growth data...</div>';
+
+
+          google.script.run
+            .withFailureHandler(handleDataFetchError)
+            .withSuccessHandler(updateDashboard)
+            .getDashboardData();
+        }
+
+        function handleDataFetchError(error) {
+          console.error('Dashboard data fetch failed:', error);
+          document.getElementById('recentActivity').innerHTML = 
+            '<div class="vm-error">Failed to load activity data: ' + error.message + '</div>';
+          
+          showChartError('viewsChart', error);
+          showChartError('engagementChart', error);
+          showChartError('growthChart', error);
+          
+          // Update status indicators
+          document.getElementById('apiStatus').className = 'vm-status-indicator vm-status-error';
+          document.getElementById('apiStatus').textContent = 'API: Connection failed';
+        }
+
+        function showChartError(chartId, error) {
+          document.getElementById(chartId).innerHTML = 
+            '<div class="vm-error">Failed to load chart: ' + error.message + '</div>';
+        }
+
+        function showErrorMessage(message) {
+          const container = document.querySelector('.vm-dashboard-container');
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'vm-error-message';
+          errorDiv.textContent = message;
+          container.insertBefore(errorDiv, container.firstChild);
+        }
+
+        function updateDashboard(data) {
+          if (!data || !data.success) {
+            throw new Error(data.error || 'Invalid data received from server');
+          }
+
+          // Update status indicators
+          document.getElementById('apiStatus').className = 
+            data.apiStatus.healthy ? 'vm-status-indicator vm-status-good' : 'vm-status-indicator vm-status-error';
+          document.getElementById('apiStatus').textContent = 'API: ' + data.apiStatus.message;
+          
+          document.getElementById('dataStatus').className = 
+            data.dataStatus.healthy ? 'vm-status-indicator vm-status-good' : 'vm-status-indicator vm-status-warning';
+          document.getElementById('dataStatus').textContent = 'Data: ' + data.dataStatus.message;
+          
+          document.getElementById('syncStatus').className = 'vm-status-indicator vm-status-good';
+          document.getElementById('syncStatus').textContent = 'Last sync: ' + data.lastSync;
+
+          // Update recent activity
+          let activityHtml = '<ul class="vm-activity-list">';
+          data.recentActivity.forEach(item => {
+            activityHtml += `<li><strong>${item.time}:</strong> ${item.action}`;
+            if (item.views !== null) {
+              activityHtml += ` (${item.views} views)`;
+            }
+            activityHtml += '</li>';
+          });
+          activityHtml += '</ul>';
+          document.getElementById('recentActivity').innerHTML = activityHtml;
+
+          // Draw charts if Google Charts loaded successfully
+          if (typeof google !== 'undefined' && typeof google.visualization !== 'undefined') {
+            drawViewsChart(data.viewsData);
+            drawEngagementChart(data.engagementData);
+            drawGrowthChart(data.growthData);
+          }
+        }
+
+        function drawViewsChart(dataRows) {
+          try {
+            const data = new google.visualization.DataTable();
+            data.addColumn('string', 'Day');
+            data.addColumn('number', 'Views');
+            data.addRows(dataRows);
+
+            const options = {
+              title: 'Views by Day',
+              curveType: 'function',
+              legend: { position: 'bottom' }
+            };
+
+            const chart = new google.visualization.LineChart(document.getElementById('viewsChart'));
+            chart.draw(data, options);
+          } catch (e) {
+            console.error('Failed to draw views chart:', e);
+            showChartError('viewsChart', e);
+          }
+        }
+
+        function drawEngagementChart(dataRows) {
+          try {
+            const data = new google.visualization.DataTable();
+            data.addColumn('string', 'Metric');
+            data.addColumn('number', 'Count');
+            data.addRows(dataRows);
+
+            const options = {
+              title: 'Engagement Metrics',
+              pieHole: 0.4,
+            };
+
+            const chart = new google.visualization.PieChart(document.getElementById('engagementChart'));
+            chart.draw(data, options);
+          } catch (e) {
+            console.error('Failed to draw engagement chart:', e);
+            showChartError('engagementChart', e);
+          }
+        }
+
+        function drawGrowthChart(dataRows) {
+          try {
+            const data = new google.visualization.DataTable();
+            data.addColumn('string', 'Month');
+            data.addColumn('number', 'Subscribers');
+            data.addColumn('number', 'Views');
+            data.addRows(dataRows);
+
+            const options = {
+              title: 'Growth Metrics',
+              hAxis: { title: 'Month' },
+              vAxis: { title: 'Count' },
+              seriesType: 'bars',
+              series: {1: {type: 'line'}}
+            };
+
+            const chart = new google.visualization.ComboChart(document.getElementById('growthChart'));
+            chart.draw(data, options);
+          } catch (e) {
+            console.error('Failed to draw growth chart:', e);
+            showChartError('growthChart', e);
+          }
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div class="vm-dashboard-container">
+      <h2>Video Metrics Dashboard</h2>
+      
+      <div class="vm-chart-container">
+        <div class="vm-chart" id="viewsChart"></div>
+        <div class="vm-chart" id="engagementChart"></div>
+        <div class="vm-chart" id="growthChart"></div>
+      </div>
+      
+      <div class="vm-summary-section">
+        <h3>Recent Activity Summary</h3>
+        <div id="recentActivity"></div>
+      </div>
+      
+      <div class="vm-status-section">
+        <div class="vm-status-indicator vm-status-good" id="apiStatus">
+          API: Loading...
+        </div>
+        <div class="vm-status-indicator vm-status-good" id="dataStatus">
+          Data: Loading...
+        </div>
+        <div class="vm-status-indicator vm-status-good" id="syncStatus">
+          Last sync: Loading...
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

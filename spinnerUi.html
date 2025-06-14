@@ -1,0 +1,77 @@
+<!-- This file includes embedded JS/CSS due to project type rules -->
+<html>
+<head>
+  <base target="_top">
+  <style>
+    .spinner {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .spinner-content {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    function showSpinner() {
+      try {
+        const spinner = document.getElementById('spinner') || createSpinner();
+        spinner.style.display = 'flex';
+      } catch (e) {
+        console.error('Error showing spinner:', e);
+      }
+    }
+
+    function hideSpinner() {
+      try {
+        const spinner = document.getElementById('spinner');
+        if (spinner) spinner.style.display = 'none';
+      } catch (e) {
+        console.error('Error hiding spinner:', e);
+      }
+    }
+
+    function createSpinner() {
+      try {
+        if (!document.body) {
+          console.error('Document body not found');
+          return null;
+        }
+        
+        const spinner = document.createElement('div');
+        spinner.id = 'spinner';
+        spinner.className = 'spinner';
+        spinner.style.display = 'flex';
+        
+        const spinnerContent = document.createElement('div');
+        spinnerContent.className = 'spinner-content';
+        spinner.appendChild(spinnerContent);
+        
+        document.body.appendChild(spinner);
+        return spinner;
+      } catch (e) {
+        console.error('Error creating spinner:', e);
+        return null;
+      }
+    }
+  </script>
+</body>
+</html>
