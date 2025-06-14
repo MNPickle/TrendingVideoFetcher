@@ -1,4 +1,4 @@
-# ScriptBuilderProject Build Instructions
+# Trending Video Fetcher Build Instructions
 
 ## 1. Prerequisites & Environment Setup
 
